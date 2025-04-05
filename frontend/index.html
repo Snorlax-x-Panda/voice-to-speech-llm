@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>JARVIS AI v0.1</head>
+    <body>
+        <h2>Speak and Transcribe</h2>
+
+        <label for="apiKeyInput">🔑 Enter API Key:</label>
+        <input type="text" id="apiKeyInput" placeholder="Your Gemini API Key" />
+        <button onclick="sendApiKey()">Connect</button>
+        <br><br>
+
+        <button id="startBtn">Start Recording</button>
+        <button id="stopBtn" disabled>Stop Recording</button>
+        <p><strong>Transcript:</strong></p>
+        <pre id="transcript">...</pre>
+
+        <p><strong>Gemini Response:</strong></p>
+        <pre id="gemini">...</pre>
+    <script src="script.js"></script>
+</html>

@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+google = "*"
+google-generativeai = "*"
+requests-aws4auth = "*"
+websockets = "*"
+aiohttp = "*"
+awscrt = "==0.16.13"
+ffmpeg = "*"
+aiofile = "*"
+amazon-transcribe = "*"
+chalice = "*"
+
+[dev-packages]
+chalice = "*"
+
+[requires]
+python_version = "3.10"
+python_full_version = "3.10.12"
