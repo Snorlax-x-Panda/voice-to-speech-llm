@@ -4,7 +4,7 @@ import json
 import base64
 import google.generativeai as genai
 from chalicelib import transcribe_service
-
+from chalicelib import polly_service
 import subprocess
 import tempfile
 import os
@@ -72,7 +72,7 @@ def transcribe():
 
         audio_bytes = base64.b64decode(audio_b64)
 
-        # Save original PCM file
+        # Save the Original PCM File
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pcm') as f:
             f.write(audio_bytes)
             raw_path = f.name
@@ -90,3 +90,18 @@ def transcribe():
         return {'error': str(e)}
 
 
+@app.route('/speak', methods=['POST'], content_types=['application/json'], cors=True)
+def synthesize_speech():
+    body = app.current_request.json_body
+    text = body.get('text')
+
+    if not text:
+        return {'error': 'No text Provided!'}
+
+    service = polly_service.PollyService()
+    audio_b64 = service.synthesize(text)
+
+    if not audio_b64:
+        return {'error': 'Polly Failed!'}
+
+    return {'audio_base64': audio_b64}

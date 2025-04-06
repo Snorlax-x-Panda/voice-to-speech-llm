@@ -31,7 +31,7 @@ function base64ArrayBuffer(arrayBuffer) {
 
 async function startRecording() {
     pcmChunks = [];
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream = await navigator.mediaDevices.getUserMedia({audio: true});
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
     const source = audioContext.createMediaStreamSource(stream);
@@ -61,15 +61,15 @@ async function stopRecording() {
 
     stream.getTracks().forEach(track => track.stop());
 
-    const fullPCM = new Blob(pcmChunks, { type: "application/octet-stream" });
+    const fullPCM = new Blob(pcmChunks, {type: "application/octet-stream"});
     const arrayBuffer = await fullPCM.arrayBuffer();
     const base64 = base64ArrayBuffer(arrayBuffer);
 
     // Send to backend
     const response = await fetch("http://127.0.0.1:8000/transcribe", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audio_blob: base64 })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({audio_blob: base64})
     });
 
     const result = await response.json();
@@ -87,19 +87,39 @@ document.getElementById("stopBtn").addEventListener("click", stopRecording);
 async function fetchGeminiResponse(text) {
     const res = await fetch("http://127.0.0.1:8000/gemini", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ message: text })
     });
     const result = await res.json();
-    document.getElementById("gemini").textContent = result.response || result.error;
-  }
+    const reply = result.response || result.error || "No Response.";
+    document.getElementById("gemini").textContent = reply
+
+    // POST to Polly
+    const voiceRes = await fetch("http://127.0.0.1:8000/speak", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ text: reply })
+      });
+  
+
+    const voiceResult = await voiceRes.json();
+
+    if (voiceResult.audio_base64) {
+        const audio = document.getElementById("audioPlayer");
+        audio.src = "data:audio/mp3;base64," + voiceResult.audio_base64;
+        audio.play();
+    }
+    else {
+        console.error("Polly error:", voiceResult.error);
+    }
+}
 
 async function sendApiKey() {
     const key = document.getElementById("apiKeyInput").value;
     const res = await fetch("http://127.0.0.1:8000/handshake", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: key })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({api_key: key})
     });
     const result = await res.text();
     alert("Handshake result: " + result);
