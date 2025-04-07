@@ -1,21 +1,46 @@
 <!DOCTYPE html>
 <html>
-    <head>JARVIS AI v0.2</head>
-    <body>
-        <h2>Speak and Transcribe</h2>
-        <link href="" rel="stylesheet">
-        <label for="apiKeyInput">Enter API Key:</label>
-        <input type="text" id="apiKeyInput" placeholder="Your Gemini API Key" />
-        <button id="apiBtn">Connect</button>
-        <br><br>
+    <link href="./src/output.css" rel="stylesheet">
+    <body class="bg-white text-gray-800 font-sans">
+        <header class="flex justify-between items-center px-6 py-4 border-b">
+            <!-- NAV Bar -->
+            <div class="font-bold text-sm">JARVIS AI 0.3</div>
+            <nav class="flex items-center gap-4">
+                <a href="#" class="text-sm">Pricing</a>
+                <a href="#" class="text-sm">About</a>
+                <button class="bg-black text-white text-sm px-4 py-2 rounded">Sign In</button>
+            </nav>
+        </header>
+        <main class="max-w-3xl mx-auto px-6 py-12">
+            <h1 class="text-3xl font-bold mb-2">Hi James!</h1>
+            <p class="text-gray-600 mb-6">What would you like to talk about today?<br>Is there anything that I can help with?</p>
+            
+            <!-- API Panel -->
+            <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <button class="bg-black text-white px-6 py-2 rounded hover:bg-gray-900 transition" id="apiBtn">Enter API Key</button>
+                <input type="text" id="apiKeyInput" placeholder="Enter your API key" class="w-full sm:w-64 px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-black"/>
+            </div>
 
-        <button id="startBtn">Start Recording</button>
-        <button id="stopBtn" disabled>Stop Recording</button>
-        <p><strong>Transcript:</strong></p>
-        <pre id="transcript">...</pre>
+            <!-- Control Panel -->
+            <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <button id="startBtn" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 transition">Start</button>
+                <button id="stopBtn" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 transition">Stop</button>
+            </div>
+            
+            <!-- Response Box -->
+            <section class="mt-10 p-6 bg-gray-100 border rounded-lg space-y-4">
+                <div>
+                    <strong class="block mb-1">Transcript:</strong>
+                    <pre id="transcript" class="bg-white p-3 rounded shadow text-sm">...</pre>
+                </div>
+                <div>
+                    <strong class="block mb-1">Gemini Response:</strong>
+                    <pre id="gemini" class="bg-white p-3 rounded shadow text-sm">...</pre>
+                </div>
+                <audio id="audioPlayer" controls class="mt-2 w-full"></audio>
+            </section>
 
-        <p><strong>Gemini Response:</strong></p>
-        <pre id="gemini">...</pre>
-        <audio id="audioPlayer" controls></audio>
+        </main>
+    </body>
     <script src="script.js"></script>
 </html>
