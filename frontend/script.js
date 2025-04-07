@@ -8,7 +8,12 @@ let input;
 let stream;
 let pcmChunks = [];
 
-// Convert Float32 audio to 16-bit PCM
+let lastSpeechTime = null;
+const SILENCE_TIMEOUT = 3000; 
+const SILENCE_THRESHOLD = 0.01;
+
+
+// Convert Float32 Audio to 16-bit PCM
 function floatTo16BitPCM(input) {
     const buffer = new ArrayBuffer(input.length * 2);
     const view = new DataView(buffer);
@@ -19,7 +24,7 @@ function floatTo16BitPCM(input) {
     return new Uint8Array(buffer);
 }
 
-// Safe base64 encoder for large buffers
+// Safe Base64 Encoder for Large Buffers
 function base64ArrayBuffer(arrayBuffer) {
     const bytes = new Uint8Array(arrayBuffer);
     let binary = '';
@@ -41,10 +46,32 @@ async function startRecording() {
         const input = e.inputBuffer.getChannelData(0);
         const pcm = floatTo16BitPCM(input);
         pcmChunks.push(pcm);
+    
+        // Voice Activity Detection
+        let sumSquares = 0;
+        for (let i = 0; i < input.length; i++) {
+            sumSquares += input[i] * input[i];
+        }
+        const rms = Math.sqrt(sumSquares / input.length);
+    
+        // Determines if the User is Speaking
+        if (rms > SILENCE_THRESHOLD) {
+            lastSpeechTime = Date.now(); 
+        }
+    
+        // If Silent for Too Long, Stop
+        if (lastSpeechTime && Date.now() - lastSpeechTime > SILENCE_TIMEOUT) {
+            console.log("Detected Silence. Auto-Stopping.");
+            stopRecording();
+            lastSpeechTime = null;
+        }
     };
+    
 
     source.connect(processor);
     processor.connect(audioContext.destination);
+
+    lastSpeechTime = Date.now();
 
     document.getElementById("startBtn").disabled = true;
     document.getElementById("stopBtn").disabled = false;
@@ -65,7 +92,6 @@ async function stopRecording() {
     const arrayBuffer = await fullPCM.arrayBuffer();
     const base64 = base64ArrayBuffer(arrayBuffer);
 
-    // Send to backend
     const response = await fetch("http://127.0.0.1:8000/transcribe", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -80,9 +106,6 @@ async function stopRecording() {
 
     document.getElementById("startBtn").disabled = false;
 }
-
-document.getElementById("startBtn").addEventListener("click", startRecording);
-document.getElementById("stopBtn").addEventListener("click", stopRecording);
 
 async function fetchGeminiResponse(text) {
     const res = await fetch("http://127.0.0.1:8000/gemini", {
@@ -100,7 +123,6 @@ async function fetchGeminiResponse(text) {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ text: reply })
       });
-  
 
     const voiceResult = await voiceRes.json();
 
@@ -124,3 +146,7 @@ async function sendApiKey() {
     const result = await res.text();
     alert("Handshake result: " + result);
 }
+
+document.getElementById("startBtn").addEventListener("click", startRecording);
+document.getElementById("stopBtn").addEventListener("click", stopRecording);
+document.getElementById("apiBtn").addEventListener("click", sendApiKey);
